@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package embed
+package resolve
 
 import (
 	"encoding/json"
@@ -199,7 +199,7 @@ func isBadEmbedName(name string) bool {
 	return false
 }
 
-func toEmbedCfg(dir string, files []string, pmap map[string][]string) ([]byte, error) {
+func ToEmbedCfg(dir string, files []string, pmap map[string][]string) ([]byte, error) {
 	var embedcfg []byte
 	if len(pmap) > 0 {
 		var embed struct {
