@@ -64,5 +64,4 @@ func TestBuild(t *testing.T) {
 			t.Log(f.Name, string(f.Data), f.Hash)
 		}
 	}
-
 }
