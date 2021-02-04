@@ -8,8 +8,6 @@ import (
 	"go/token"
 	"path/filepath"
 	"testing"
-
-	"github.com/visualfc/embed/resolve"
 )
 
 //go:embed data/data1.txt
@@ -55,12 +53,16 @@ func TestBuild(t *testing.T) {
 	if len(ems) != 3 {
 		t.Fatal(ems)
 	}
+	r := NewResolve()
 	for _, em := range ems {
-		list, err := resolve.ResolveEmbed(pkg.Dir, em.Patterns)
+		files, err := r.Load(pkg.Dir, em)
 		if err != nil {
-			t.Fatal(err)
+			t.Fatal("error load", em, err)
 		}
-		t.Log(em, list)
+		t.Log("resolve", em)
+		for _, f := range files {
+			t.Log(f.Name, string(f.Data), f.Hash)
+		}
 	}
 
 }
