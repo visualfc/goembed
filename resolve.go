@@ -17,6 +17,13 @@ type File struct {
 	Err  error
 }
 
+var (
+	data = []byte{104, 101, 108, 108, 111}
+)
+
+func init() {
+}
+
 type Resolve interface {
 	Load(dir string, em *Embed) ([]*File, error)
 	Files() []*File

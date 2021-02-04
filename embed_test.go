@@ -76,3 +76,17 @@ func TestResolve(t *testing.T) {
 		t.Log(f.Name, string(f.Data), f.Hash)
 	}
 }
+
+func TestBytes(t *testing.T) {
+	data := []byte("\x68\x65\x6c\x6c\x6f\x20\x77\x6f\x72\x6c\x64")
+	s, err := BytesToHex(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if s != `\x68\x65\x6c\x6c\x6f\x20\x77\x6f\x72\x6c\x64` {
+		t.Fatal(s)
+	}
+	if string(data) != "hello world" {
+		t.Fail()
+	}
+}
