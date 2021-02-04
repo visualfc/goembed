@@ -4,6 +4,8 @@ import (
 	"crypto/sha256"
 	"io/ioutil"
 	"path/filepath"
+	"sort"
+	"strings"
 
 	"github.com/visualfc/embed/resolve"
 )
@@ -25,6 +27,28 @@ type resolveFile struct {
 
 func NewResolve() Resolve {
 	return &resolveFile{make(map[string]*File)}
+}
+
+func BuildFS(files []*File) []*File {
+	dirs := make(map[string]bool)
+	for _, file := range files {
+		dir := strings.Split(file.Name, "/")
+		if len(dir) > 1 {
+			dir = dir[:len(dir)-1]
+			var paths string
+			for _, v := range dir {
+				paths += v + "/"
+				dirs[paths] = true
+			}
+		}
+	}
+	for dir, _ := range dirs {
+		files = append(files, &File{Name: dir})
+	}
+	sort.SliceStable(files, func(i, j int) bool {
+		return files[i].Name < files[j].Name
+	})
+	return files
 }
 
 func (r *resolveFile) Load(dir string, em *Embed) ([]*File, error) {

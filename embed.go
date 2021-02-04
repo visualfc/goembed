@@ -68,10 +68,10 @@ func CheckEmbed(embedPatternPos map[string][]token.Position, fset *token.FileSet
 }
 
 const (
-	embedUnknown int = iota
-	embedBytes
-	embedString
-	embedFiles
+	EmbedUnknown int = iota
+	EmbedBytes
+	EmbedString
+	EmbedFiles
 )
 
 func checkIdent(v ast.Expr, name string) bool {
@@ -85,18 +85,18 @@ func embedKind(typ ast.Expr) int {
 	switch v := typ.(type) {
 	case *ast.Ident:
 		if checkIdent(v, "string") {
-			return embedString
+			return EmbedString
 		}
 	case *ast.ArrayType:
 		if checkIdent(v.Elt, "byte") {
-			return embedBytes
+			return EmbedBytes
 		}
 	case *ast.SelectorExpr:
 		if checkIdent(v.X, "embed") && checkIdent(v.Sel, "FS") {
-			return embedFiles
+			return EmbedFiles
 		}
 	}
-	return embedUnknown
+	return EmbedUnknown
 }
 
 func findEmbed(fset *token.FileSet, file *ast.File, eps []*embedPatterns) (embeds []*Embed) {
