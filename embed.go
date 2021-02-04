@@ -3,7 +3,6 @@ package embed
 import (
 	"go/ast"
 	"go/token"
-	"log"
 	"sort"
 	"strings"
 )
@@ -24,7 +23,7 @@ type embedPatterns struct {
 	Pos      token.Position
 }
 
-func CheckEmbed(embedPatternPos map[string][]token.Position, fset *token.FileSet, files []*ast.File) error {
+func CheckEmbed(embedPatternPos map[string][]token.Position, fset *token.FileSet, files []*ast.File) (embeds []*Embed) {
 	if len(embedPatternPos) == 0 {
 		return nil
 	}
@@ -57,7 +56,6 @@ func CheckEmbed(embedPatternPos map[string][]token.Position, fset *token.FileSet
 			eps = append(eps, last)
 		}
 	}
-	var embeds []*Embed
 	for _, file := range files {
 		if fmap[fset.Position(file.Package).Filename] {
 			ems := findEmbed(fset, file, eps)
@@ -66,10 +64,7 @@ func CheckEmbed(embedPatternPos map[string][]token.Position, fset *token.FileSet
 			}
 		}
 	}
-	for _, e := range embeds {
-		log.Println(e)
-	}
-	return nil
+	return
 }
 
 const (
