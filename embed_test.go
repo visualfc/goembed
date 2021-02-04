@@ -71,4 +71,8 @@ func TestResolve(t *testing.T) {
 			}
 		}
 	}
+	t.Log("--------- files")
+	for _, f := range r.Files() {
+		t.Log(f.Name, string(f.Data), f.Hash)
+	}
 }

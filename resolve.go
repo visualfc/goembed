@@ -19,6 +19,7 @@ type File struct {
 
 type Resolve interface {
 	Load(dir string, em *Embed) ([]*File, error)
+	Files() []*File
 }
 
 type resolveFile struct {
@@ -49,6 +50,16 @@ func BuildFS(files []*File) []*File {
 		return files[i].Name < files[j].Name
 	})
 	return files
+}
+
+func (r *resolveFile) Files() (files []*File) {
+	for _, v := range r.data {
+		files = append(files, v)
+	}
+	sort.SliceStable(files, func(i, j int) bool {
+		return files[i].Name < files[j].Name
+	})
+	return
 }
 
 func (r *resolveFile) Load(dir string, em *Embed) ([]*File, error) {
