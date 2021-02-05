@@ -11,13 +11,13 @@ import (
 	"unsafe"
 )
 
-//go:embed data/data1.txt
+//go:embed testdata/data1.txt
 var data1 string
 
-//go:embed data/data2.txt
+//go:embed testdata/data2.txt
 var data2 []byte
 
-//go:embed data
+//go:embed testdata
 var fs embed.FS
 
 type file struct {
