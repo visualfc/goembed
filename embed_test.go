@@ -77,13 +77,21 @@ func TestResolve(t *testing.T) {
 	}
 }
 
-func TestBytes(t *testing.T) {
+func TestBytesHex(t *testing.T) {
 	data := []byte("\x68\x65\x6c\x6c\x6f\x20\x77\x6f\x72\x6c\x64")
-	s, err := BytesToHex(data)
-	if err != nil {
-		t.Fatal(err)
-	}
+	s := BytesToHex(data)
 	if s != `\x68\x65\x6c\x6c\x6f\x20\x77\x6f\x72\x6c\x64` {
+		t.Fatal(s)
+	}
+	if string(data) != "hello world" {
+		t.Fail()
+	}
+}
+
+func TestBytesList(t *testing.T) {
+	data := []byte{104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100}
+	s := BytesToList(data)
+	if s != `104,101,108,108,111,32,119,111,114,108,100` {
 		t.Fatal(s)
 	}
 	if string(data) != "hello world" {

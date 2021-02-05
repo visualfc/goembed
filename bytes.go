@@ -2,13 +2,23 @@ package goembed
 
 import (
 	"bytes"
+	"fmt"
 	"io"
+	"strings"
 )
 
-func BytesToHex(data []byte) (string, error) {
+func BytesToList(data []byte) string {
+	var ar []string
+	for _, v := range data {
+		ar = append(ar, fmt.Sprintf("%d", v))
+	}
+	return strings.Join(ar, ",")
+}
+
+func BytesToHex(data []byte) string {
 	var buf bytes.Buffer
-	_, err := WriteToHex(data, &buf)
-	return buf.String(), err
+	WriteToHex(data, &buf)
+	return buf.String()
 }
 
 const hex = "0123456789abcdef"
