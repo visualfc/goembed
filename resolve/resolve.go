@@ -13,7 +13,7 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/visualfc/embed/fsys"
+	"github.com/visualfc/goembed/fsys"
 )
 
 // An EmbedError indicates a problem with a go:embed directive.

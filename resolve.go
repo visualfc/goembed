@@ -1,4 +1,4 @@
-package embed
+package goembed
 
 import (
 	"crypto/sha256"
@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/visualfc/embed/resolve"
+	"github.com/visualfc/goembed/resolve"
 )
 
 type File struct {

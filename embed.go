@@ -1,4 +1,4 @@
-package embed
+package goembed
 
 import (
 	"go/ast"

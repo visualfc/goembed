@@ -12,11 +12,11 @@ import (
 	"log"
 	"path/filepath"
 
-	"github.com/visualfc/embed"
+	"github.com/visualfc/goembed"
 )
 
 func main() {
-	pkg, err := build.Import("github.com/visualfc/embed", "", 0)
+	pkg, err := build.Import("github.com/visualfc/goembed", "", 0)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -30,7 +30,7 @@ func main() {
 		files = append(files, f)
 	}
 	ems := embed.CheckEmbed(pkg.TestEmbedPatternPos, fset, files)
-	r := embed.NewResolve()
+	r := goembed.NewResolve()
 	for _, em := range ems {
 		files, err := r.Load(pkg.Dir, em)
 		if err != nil {

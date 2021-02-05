@@ -1,4 +1,4 @@
-package embed
+package goembed
 
 import (
 	"embed"
@@ -44,7 +44,7 @@ func TestEmbed(t *testing.T) {
 }
 
 func TestResolve(t *testing.T) {
-	pkg, err := build.Import("github.com/visualfc/embed", "", 0)
+	pkg, err := build.Import("github.com/visualfc/goembed", "", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
