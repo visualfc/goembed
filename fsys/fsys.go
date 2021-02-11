@@ -1,12 +1,9 @@
-// Package fsys is an abstraction for reading files that
-// allows for virtual overlays on top of the files on disk.
 package fsys
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/fs"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -14,6 +11,8 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/visualfc/goembed/fs"
 )
 
 // OverlayFile is the path to a text file in the OverlayJSON format.
@@ -86,7 +85,7 @@ func Init(wd string) error {
 		return nil
 	}
 
-	b, err := os.ReadFile(OverlayFile)
+	b, err := ioutil.ReadFile(OverlayFile)
 	if err != nil {
 		return fmt.Errorf("reading overlay file: %v", err)
 	}
