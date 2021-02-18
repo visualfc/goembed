@@ -48,7 +48,7 @@ func CheckEmbed(embedPatternPos map[string][]token.Position, fset *token.FileSet
 	for i := 1; i < len(ep); i++ {
 		e := ep[i]
 		if e.Pos.Filename == last.Pos.Filename &&
-			e.Pos.Line == last.Pos.Line+1 {
+			(e.Pos.Line == last.Pos.Line || e.Pos.Line == last.Pos.Line+1) {
 			last.Patterns = append(last.Patterns, e.Patterns)
 			last.Pos = e.Pos
 		} else {
