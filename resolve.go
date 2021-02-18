@@ -6,7 +6,6 @@ import (
 	"path"
 	"path/filepath"
 	"sort"
-	"strings"
 
 	"github.com/visualfc/goembed/resolve"
 )
@@ -97,18 +96,33 @@ func (r *resolveFile) Load(dir string, em *Embed) ([]*File, error) {
 	return files, nil
 }
 
-func embedFileNameSplit(name string) (dir, elem string) {
-	pos := strings.LastIndex(name, "/")
-	if pos >= 0 {
-		return name[:pos], name[pos+1:]
+// func embedFileNameSplit(name string) (dir, elem string) {
+// 	pos := strings.LastIndex(name, "/")
+// 	if pos >= 0 {
+// 		return name[:pos], name[pos+1:]
+// 	}
+// 	return name, ""
+// }
+
+func embedFileNameSplit(name string) (dir, elem string, isDir bool) {
+	if name[len(name)-1] == '/' {
+		isDir = true
+		name = name[:len(name)-1]
 	}
-	return name, ""
+	i := len(name) - 1
+	for i >= 0 && name[i] != '/' {
+		i--
+	}
+	if i < 0 {
+		return ".", name, isDir
+	}
+	return name[:i], name[i+1:], isDir
 }
 
 // embedFileLess implements the sort order for a list of embedded files.
 // See the comment inside ../../../../embed/embed.go's Files struct for rationale.
 func embedFileLess(x, y string) bool {
-	xdir, xelem := embedFileNameSplit(x)
-	ydir, yelem := embedFileNameSplit(y)
+	xdir, xelem, _ := embedFileNameSplit(x)
+	ydir, yelem, _ := embedFileNameSplit(y)
 	return xdir < ydir || xdir == ydir && xelem < yelem
 }
