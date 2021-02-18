@@ -3,6 +3,7 @@ package goembed
 import (
 	"crypto/sha256"
 	"io/ioutil"
+	"path"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -38,33 +39,30 @@ func NewResolve() Resolve {
 }
 
 func BuildFS(files []*File) []*File {
-	dirs := make(map[string]bool)
+	have := make(map[string]bool)
+	var list []*File
 	for _, file := range files {
-		dir := strings.Split(file.Name, "/")
-		if len(dir) > 1 {
-			dir = dir[:len(dir)-1]
-			var paths string
-			for _, v := range dir {
-				paths += v + "/"
-				dirs[paths] = true
-			}
+		if !have[file.Name] {
+			have[file.Name] = true
+			list = append(list, file)
+		}
+		for dir := path.Dir(file.Name); dir != "." && !have[dir]; dir = path.Dir(dir) {
+			have[dir] = true
+			list = append(list, &File{Name: dir + "/"})
 		}
 	}
-	for dir, _ := range dirs {
-		files = append(files, &File{Name: dir})
-	}
-	sort.SliceStable(files, func(i, j int) bool {
-		return files[i].Name < files[j].Name
+	sort.Slice(list, func(i, j int) bool {
+		return embedFileLess(list[i].Name, list[j].Name)
 	})
-	return files
+	return list
 }
 
 func (r *resolveFile) Files() (files []*File) {
 	for _, v := range r.data {
 		files = append(files, v)
 	}
-	sort.SliceStable(files, func(i, j int) bool {
-		return files[i].Name < files[j].Name
+	sort.Slice(files, func(i, j int) bool {
+		return embedFileLess(files[i].Name, files[j].Name)
 	})
 	return
 }
@@ -93,5 +91,24 @@ func (r *resolveFile) Load(dir string, em *Embed) ([]*File, error) {
 		}
 		files = append(files, f)
 	}
+	sort.Slice(files, func(i, j int) bool {
+		return embedFileLess(files[i].Name, files[j].Name)
+	})
 	return files, nil
+}
+
+func embedFileNameSplit(name string) (dir, elem string) {
+	pos := strings.LastIndex(name, "/")
+	if pos >= 0 {
+		return name[:pos], name[pos+1:]
+	}
+	return name, ""
+}
+
+// embedFileLess implements the sort order for a list of embedded files.
+// See the comment inside ../../../../embed/embed.go's Files struct for rationale.
+func embedFileLess(x, y string) bool {
+	xdir, xelem := embedFileNameSplit(x)
+	ydir, yelem := embedFileNameSplit(y)
+	return xdir < ydir || xdir == ydir && xelem < yelem
 }
