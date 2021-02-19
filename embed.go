@@ -11,6 +11,7 @@ type Embed struct {
 	Name     string
 	Kind     int
 	Patterns []string
+	Spec     *ast.ValueSpec
 }
 
 type embedPattern struct {
@@ -113,6 +114,7 @@ func findEmbed(fset *token.FileSet, file *ast.File, eps []*embedPatterns) (embed
 									Name:     spec.Names[0].Name,
 									Kind:     embedKind(spec.Type),
 									Patterns: e.Patterns,
+									Spec:     spec,
 								},
 							)
 						}
