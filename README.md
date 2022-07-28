@@ -29,7 +29,7 @@ func main() {
 		}
 		files = append(files, f)
 	}
-	ems := embed.CheckEmbed(pkg.TestEmbedPatternPos, fset, files)
+	ems := goembed.CheckEmbed(pkg.TestEmbedPatternPos, fset, files)
 	r := goembed.NewResolve()
 	for _, em := range ems {
 		files, err := r.Load(pkg.Dir, em)
