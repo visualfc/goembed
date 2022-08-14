@@ -17,13 +17,6 @@ type File struct {
 	Err  error
 }
 
-var (
-	data = []byte{104, 101, 108, 108, 111}
-)
-
-func init() {
-}
-
 type Resolve interface {
 	Load(dir string, em *Embed) ([]*File, error)
 	Files() []*File
@@ -95,14 +88,6 @@ func (r *resolveFile) Load(dir string, em *Embed) ([]*File, error) {
 	})
 	return files, nil
 }
-
-// func embedFileNameSplit(name string) (dir, elem string) {
-// 	pos := strings.LastIndex(name, "/")
-// 	if pos >= 0 {
-// 		return name[:pos], name[pos+1:]
-// 	}
-// 	return name, ""
-// }
 
 func embedFileNameSplit(name string) (dir, elem string, isDir bool) {
 	if name[len(name)-1] == '/' {
