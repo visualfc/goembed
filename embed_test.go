@@ -1,3 +1,4 @@
+//go:build go1.16
 // +build go1.16
 
 package goembed
@@ -16,11 +17,13 @@ import (
 //go:embed testdata/data1.txt
 var data1 string
 
-//go:embed testdata/data2.txt
-var data2 []byte
+var (
+	//go:embed testdata/data2.txt
+	data2 []byte
 
-//go:embed testdata
-var fs embed.FS
+	//go:embed testdata
+	fs embed.FS
+)
 
 type file struct {
 	name string
