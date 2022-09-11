@@ -11,6 +11,7 @@ type Embed struct {
 	Name     string
 	Kind     int
 	Patterns []string
+	Pos      token.Position
 	Spec     *ast.ValueSpec
 }
 
@@ -121,6 +122,7 @@ func findEmbed(fset *token.FileSet, file *ast.File, eps []*embedPatterns) (embed
 								Name:     name.Name,
 								Kind:     embedKind(vs.Type),
 								Patterns: e.Patterns,
+								Pos:      e.Pos,
 								Spec:     vs,
 							},
 						)

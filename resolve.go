@@ -2,6 +2,7 @@ package goembed
 
 import (
 	"crypto/sha256"
+	"fmt"
 	"io/ioutil"
 	"path"
 	"path/filepath"
@@ -62,7 +63,7 @@ func (r *resolveFile) Files() (files []*File) {
 func (r *resolveFile) Load(dir string, em *Embed) ([]*File, error) {
 	list, err := resolve.ResolveEmbed(dir, em.Patterns)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%v: %w", em.Pos, err)
 	}
 	var files []*File
 	for _, v := range list {
