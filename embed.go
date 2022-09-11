@@ -103,21 +103,27 @@ func embedKind(typ ast.Expr) int {
 func findEmbed(fset *token.FileSet, file *ast.File, eps []*embedPatterns) (embeds []*Embed) {
 	for _, decl := range file.Decls {
 		if d, ok := decl.(*ast.GenDecl); ok && d.Tok == token.VAR {
-			pos := fset.Position(d.Pos())
-			for _, e := range eps {
-				if pos.Filename == e.Pos.Filename &&
-					pos.Line == e.Pos.Line+1 {
-					if len(d.Specs) == 1 {
-						if spec, ok := d.Specs[0].(*ast.ValueSpec); ok {
-							embeds = append(embeds,
-								&Embed{
-									Name:     spec.Names[0].Name,
-									Kind:     embedKind(spec.Type),
-									Patterns: e.Patterns,
-									Spec:     spec,
-								},
-							)
-						}
+			for _, spec := range d.Specs {
+				vs, ok := spec.(*ast.ValueSpec)
+				if !ok {
+					continue
+				}
+				if len(vs.Names) != 1 {
+					continue
+				}
+				name := vs.Names[0]
+				pos := fset.Position(name.NamePos)
+				for _, e := range eps {
+					if pos.Filename == e.Pos.Filename &&
+						pos.Line == e.Pos.Line+1 {
+						embeds = append(embeds,
+							&Embed{
+								Name:     name.Name,
+								Kind:     embedKind(vs.Type),
+								Patterns: e.Patterns,
+								Spec:     vs,
+							},
+						)
 					}
 				}
 			}
