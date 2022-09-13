@@ -111,14 +111,17 @@ func findEmbed(fset *token.FileSet, file *ast.File, eps []*Embed) error {
 				if !ok {
 					continue
 				}
-				if len(vs.Names) != 1 {
-					continue
-				}
 				name := vs.Names[0]
 				pos := fset.Position(name.NamePos)
 				for _, e := range eps {
 					if pos.Filename == e.Pos.Filename &&
 						pos.Line == e.Pos.Line+1 {
+						if len(vs.Names) != 1 {
+							return fmt.Errorf("%v: go:embed cannot apply to multiple vars", e.Pos)
+						}
+						if len(vs.Values) > 0 {
+							return fmt.Errorf("%v: go:embed cannot apply to var with initializer", e.Pos)
+						}
 						e.Name = name.Name
 						e.Kind = embedKind(vs.Type)
 						e.Spec = vs
