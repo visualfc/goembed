@@ -62,7 +62,10 @@ func TestResolve(t *testing.T) {
 		}
 		files = append(files, f)
 	}
-	ems := CheckEmbed(pkg.TestEmbedPatternPos, fset, files)
+	ems, err := CheckEmbed(pkg.TestEmbedPatternPos, fset, files)
+	if err != nil {
+		t.Fatal(err)
+	}
 	r := NewResolve()
 	for _, em := range ems {
 		files, err := r.Load(pkg.Dir, em)

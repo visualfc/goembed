@@ -1,6 +1,7 @@
 package goembed
 
 import (
+	"fmt"
 	"go/ast"
 	"go/token"
 	"sort"
@@ -20,14 +21,10 @@ type embedPattern struct {
 	Pos      token.Position
 }
 
-type embedPatterns struct {
-	Patterns []string
-	Pos      token.Position
-}
-
-func CheckEmbed(embedPatternPos map[string][]token.Position, fset *token.FileSet, files []*ast.File) (embeds []*Embed) {
+// CheckEmbed lookup go:embed vars from embedPatternPos
+func CheckEmbed(embedPatternPos map[string][]token.Position, fset *token.FileSet, files []*ast.File) ([]*Embed, error) {
 	if len(embedPatternPos) == 0 {
-		return nil
+		return nil, nil
 	}
 	fmap := make(map[string]bool)
 	var ep []*embedPattern
@@ -44,8 +41,8 @@ func CheckEmbed(embedPatternPos map[string][]token.Position, fset *token.FileSet
 		}
 		return n < 0
 	})
-	var eps []*embedPatterns
-	last := &embedPatterns{[]string{ep[0].Patterns}, ep[0].Pos}
+	var eps []*Embed
+	last := &Embed{Patterns: []string{ep[0].Patterns}, Pos: ep[0].Pos}
 	eps = append(eps, last)
 	for i := 1; i < len(ep); i++ {
 		e := ep[i]
@@ -54,19 +51,24 @@ func CheckEmbed(embedPatternPos map[string][]token.Position, fset *token.FileSet
 			last.Patterns = append(last.Patterns, e.Patterns)
 			last.Pos = e.Pos
 		} else {
-			last = &embedPatterns{[]string{e.Patterns}, e.Pos}
+			last = &Embed{Patterns: []string{e.Patterns}, Pos: e.Pos}
 			eps = append(eps, last)
 		}
 	}
 	for _, file := range files {
 		if fmap[fset.Position(file.Package).Filename] {
-			ems := findEmbed(fset, file, eps)
-			if len(ems) > 0 {
-				embeds = append(embeds, ems...)
+			err := findEmbed(fset, file, eps)
+			if err != nil {
+				return nil, err
 			}
 		}
 	}
-	return
+	for _, e := range eps {
+		if e.Spec == nil {
+			return nil, fmt.Errorf("%v: misplaced go:embed directive", e.Pos)
+		}
+	}
+	return eps, nil
 }
 
 const (
@@ -101,7 +103,7 @@ func embedKind(typ ast.Expr) int {
 	return EmbedUnknown
 }
 
-func findEmbed(fset *token.FileSet, file *ast.File, eps []*embedPatterns) (embeds []*Embed) {
+func findEmbed(fset *token.FileSet, file *ast.File, eps []*Embed) error {
 	for _, decl := range file.Decls {
 		if d, ok := decl.(*ast.GenDecl); ok && d.Tok == token.VAR {
 			for _, spec := range d.Specs {
@@ -117,19 +119,13 @@ func findEmbed(fset *token.FileSet, file *ast.File, eps []*embedPatterns) (embed
 				for _, e := range eps {
 					if pos.Filename == e.Pos.Filename &&
 						pos.Line == e.Pos.Line+1 {
-						embeds = append(embeds,
-							&Embed{
-								Name:     name.Name,
-								Kind:     embedKind(vs.Type),
-								Patterns: e.Patterns,
-								Pos:      e.Pos,
-								Spec:     vs,
-							},
-						)
+						e.Name = name.Name
+						e.Kind = embedKind(vs.Type)
+						e.Spec = vs
 					}
 				}
 			}
 		}
 	}
-	return
+	return nil
 }
