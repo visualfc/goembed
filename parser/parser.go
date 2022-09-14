@@ -13,8 +13,8 @@ import (
 )
 
 type EmbedPatterns struct {
-	EmbedPatterns   []string                    // patterns from ast.File
-	EmbedPatternPos map[string][]token.Position // line information for EmbedPatterns
+	Patterns   []string                    // patterns from ast.File
+	PatternPos map[string][]token.Position // line information for Patterns
 }
 
 func ParseEmbed(fset *token.FileSet, files []*ast.File) (*EmbedPatterns, error) {

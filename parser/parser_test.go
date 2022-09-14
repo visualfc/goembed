@@ -32,14 +32,14 @@ func TestParser(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Log("parser test embed", embed)
-	if !reflect.DeepEqual(bp.TestEmbedPatterns, embed.EmbedPatterns) {
+	if !reflect.DeepEqual(bp.TestEmbedPatterns, embed.Patterns) {
 		t.Fatal("EmbedPatterns error")
 	}
-	if len(bp.TestEmbedPatternPos) != len(embed.EmbedPatternPos) {
+	if len(bp.TestEmbedPatternPos) != len(embed.PatternPos) {
 		t.Fatal("EmbedPatternPos len error")
 	}
 	for k, v := range bp.TestEmbedPatternPos {
-		v2, ok := embed.EmbedPatternPos[k]
+		v2, ok := embed.PatternPos[k]
 		if !ok {
 			t.Fatal("not found", k)
 		}
