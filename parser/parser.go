@@ -17,6 +17,7 @@ type EmbedPatterns struct {
 	PatternPos map[string][]token.Position // line information for Patterns
 }
 
+// ParseEmbed parser go:embed patterns from files
 func ParseEmbed(fset *token.FileSet, files []*ast.File) (*EmbedPatterns, error) {
 	var embeds []fileEmbed
 	for _, file := range files {
@@ -27,6 +28,9 @@ func ParseEmbed(fset *token.FileSet, files []*ast.File) (*EmbedPatterns, error) 
 		if len(ems) > 0 {
 			embeds = append(embeds, ems...)
 		}
+	}
+	if len(embeds) == 0 {
+		return nil, nil
 	}
 	embedMap := make(map[string][]token.Position)
 	for _, emb := range embeds {
