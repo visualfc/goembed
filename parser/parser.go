@@ -10,15 +10,14 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	_ "unsafe"
 )
 
-type Embed struct {
+type EmbedPatterns struct {
 	EmbedPatterns   []string                    // patterns from ast.File
 	EmbedPatternPos map[string][]token.Position // line information for EmbedPatterns
 }
 
-func ParseEmbed(fset *token.FileSet, files []*ast.File) (*Embed, error) {
+func ParseEmbed(fset *token.FileSet, files []*ast.File) (*EmbedPatterns, error) {
 	var embeds []fileEmbed
 	for _, file := range files {
 		ems, err := parseFile(fset, file)
@@ -33,7 +32,7 @@ func ParseEmbed(fset *token.FileSet, files []*ast.File) (*Embed, error) {
 	for _, emb := range embeds {
 		embedMap[emb.pattern] = append(embedMap[emb.pattern], emb.pos)
 	}
-	return &Embed{embedPatterns(embedMap), embedMap}, nil
+	return &EmbedPatterns{embedPatterns(embedMap), embedMap}, nil
 }
 
 func parseFile(fset *token.FileSet, file *ast.File) ([]fileEmbed, error) {
@@ -98,10 +97,3 @@ type fileEmbed struct {
 	pattern string
 	pos     token.Position
 }
-
-// parseGoEmbed parses the text following "//go:embed" to extract the glob patterns.
-// It accepts unquoted space-separated patterns as well as double-quoted and back-quoted Go strings.
-// This is based on a similar function in cmd/compile/internal/gc/noder.go;
-// this version calculates position information as well.
-//go:linkname parseGoEmbed go/build.parseGoEmbed
-func parseGoEmbed(args string, pos token.Position) ([]fileEmbed, error)
