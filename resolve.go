@@ -15,7 +15,6 @@ type File struct {
 	Name string
 	Data []byte
 	Hash [16]byte // truncated SHA256 hash
-	Err  error
 }
 
 type Resolve interface {
@@ -71,10 +70,12 @@ func (r *resolveFile) Load(dir string, em *Embed) ([]*File, error) {
 		f, ok := r.data[fpath]
 		if !ok {
 			data, err := ioutil.ReadFile(fpath)
+			if err != nil {
+				return nil, fmt.Errorf("%v: embed %v: %w", em.Pos, em.Patterns, err)
+			}
 			f = &File{
 				Name: v,
 				Data: data,
-				Err:  err,
 			}
 			if len(data) > 0 {
 				hash := sha256.Sum256(data)
