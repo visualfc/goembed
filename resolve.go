@@ -1,8 +1,11 @@
 package goembed
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"fmt"
+	"go/printer"
+	"go/token"
 	"io/ioutil"
 	"path"
 	"path/filepath"
@@ -18,7 +21,7 @@ type File struct {
 }
 
 type Resolve interface {
-	Load(dir string, em *Embed) ([]*File, error)
+	Load(dir string, fset *token.FileSet, em *Embed) ([]*File, error)
 	Files() []*File
 }
 
@@ -59,7 +62,7 @@ func (r *resolveFile) Files() (files []*File) {
 	return
 }
 
-func (r *resolveFile) Load(dir string, em *Embed) ([]*File, error) {
+func (r *resolveFile) Load(dir string, fset *token.FileSet, em *Embed) ([]*File, error) {
 	list, err := resolve.ResolveEmbed(dir, em.Patterns)
 	if err != nil {
 		return nil, fmt.Errorf("%v: %w", em.Pos, err)
@@ -84,6 +87,11 @@ func (r *resolveFile) Load(dir string, em *Embed) ([]*File, error) {
 			r.data[fpath] = f
 		}
 		files = append(files, f)
+	}
+	if em.Kind != EmbedFiles && len(files) > 1 {
+		var buf bytes.Buffer
+		printer.Fprint(&buf, fset, em.Spec.Type)
+		return nil, fmt.Errorf("%v: invalid go:embed: multiple files for type %v", fset.Position(em.Spec.Names[0].NamePos), buf.String())
 	}
 	sort.Slice(files, func(i, j int) bool {
 		return embedFileLess(files[i].Name, files[j].Name)
