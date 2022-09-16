@@ -53,3 +53,73 @@ func main() {
 	`
 	testError(src, `./main.go:3:3: go:embed only allowed in Go files that import "embed"`, t)
 }
+
+func TestErrorMultipleVars(t *testing.T) {
+	src := `package main
+
+import _ "embed"
+
+//go:embed testdata/data1.txt
+var data, data2 string
+
+func main() {
+}
+`
+	testError(src, `./main.go:5:3: go:embed cannot apply to multiple vars`, t)
+}
+
+func TestErrorWithInitializer(t *testing.T) {
+	src := `package main
+
+import _ "embed"
+
+//go:embed testdata/data1.txt
+var data string = "hello"
+
+func main() {
+}
+`
+	testError(src, `./main.go:5:3: go:embed cannot apply to var with initializer`, t)
+}
+
+func TestErrorVarType(t *testing.T) {
+	src := `package main
+
+import _ "embed"
+
+//go:embed testdata/data1.txt
+var data [128]byte
+
+func main() {
+}
+`
+	testError(src, `./main.go:6:5: go:embed cannot apply to var of type [128]byte`, t)
+}
+
+func TestErrorVarType2(t *testing.T) {
+	src := `package main
+
+import _ "embed"
+
+//go:embed testdata/data1.txt
+var data [][]byte
+
+func main() {
+}
+`
+	testError(src, `./main.go:6:5: go:embed cannot apply to var of type [][]byte`, t)
+}
+
+func TestErrorVarType3(t *testing.T) {
+	src := `package main
+
+import _ "embed"
+
+//go:embed testdata/data1.txt
+var data map[int]int
+
+func main() {
+}
+`
+	testError(src, `./main.go:6:5: go:embed cannot apply to var of type map[int]int`, t)
+}
