@@ -18,6 +18,13 @@ type Embed struct {
 	Spec     *ast.ValueSpec
 }
 
+// embedPos is go:embed start postion
+func (e *Embed) embedPos() (pos token.Position) {
+	pos = e.Pos
+	pos.Column -= 9
+	return
+}
+
 type embedPattern struct {
 	Patterns string
 	Pos      token.Position
@@ -96,6 +103,9 @@ func embedKind(typ ast.Expr) int {
 		}
 		return EmbedMaybeAlias
 	case *ast.ArrayType:
+		if v.Len != nil {
+			break
+		}
 		if checkIdent(v.Elt, "byte") {
 			return EmbedBytes
 		}
@@ -124,10 +134,10 @@ func findEmbed(fset *token.FileSet, file *ast.File, eps []*Embed) error {
 					if pos.Filename == e.Pos.Filename &&
 						pos.Line == e.Pos.Line+1 {
 						if len(vs.Names) != 1 {
-							return fmt.Errorf("%v: go:embed cannot apply to multiple vars", e.Pos)
+							return fmt.Errorf("%v: go:embed cannot apply to multiple vars", e.embedPos())
 						}
 						if len(vs.Values) > 0 {
-							return fmt.Errorf("%v: go:embed cannot apply to var with initializer", e.Pos)
+							return fmt.Errorf("%v: go:embed cannot apply to var with initializer", e.embedPos())
 						}
 						kind := embedKind(vs.Type)
 						if kind == EmbedUnknown {
