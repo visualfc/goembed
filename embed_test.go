@@ -5,11 +5,13 @@ package goembed
 
 import (
 	"embed"
+	"fmt"
 	"go/ast"
 	"go/build"
 	"go/parser"
 	"go/token"
 	"path/filepath"
+	"strings"
 	"testing"
 	"unsafe"
 )
@@ -67,21 +69,47 @@ func TestResolve(t *testing.T) {
 		t.Fatal(err)
 	}
 	r := NewResolve()
+	var checkData1 bool
+	var checkData2 bool
+	var checkFS bool
 	for _, em := range ems {
 		files, err := r.Load(pkg.Dir, fset, em)
 		if err != nil {
 			t.Fatal("error load", em, err)
 		}
-		if em.Kind == EmbedFiles {
+		if em.Name == "data1" {
+			checkData1 = true
+			if string(files[0].Data) != "hello data1" {
+				t.Fail()
+			}
+		} else if em.Name == "data2" {
+			checkData2 = true
+			if string(files[0].Data) != "hello data2" {
+				t.Fail()
+			}
+		}
+		if em.Kind == EmbedFiles && em.Name == "fs" {
+			checkFS = true
 			files := BuildFS(files)
 			for _, f := range files {
 				t.Log(f.Name, string(f.Data), f.Hash)
 			}
+			var info1 []string
+			mfiles := *(*myfs)(unsafe.Pointer(&fs)).files
+			for _, file := range mfiles {
+				info1 = append(info1, fmt.Sprintf("%v,%v,%v", file.name, file.data, file.hash))
+			}
+			var info2 []string
+			for _, f := range files {
+				info2 = append(info2, fmt.Sprintf("%v,%v,%v", f.Name, string(f.Data), f.Hash))
+			}
+			if strings.Join(info1, ";") != strings.Join(info2, ";") {
+				t.Fatalf("build fs error:\n%v\n%v", info1, info2)
+			}
 		}
 	}
-	t.Log("--------- files")
-	for _, f := range r.Files() {
-		t.Log(f.Name, string(f.Data), f.Hash)
+	if !checkData1 || !checkData2 || !checkFS {
+		t.Fatal("not found embed", checkData1, checkData2, checkFS)
 	}
 }
 
