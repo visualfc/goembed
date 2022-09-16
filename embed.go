@@ -74,7 +74,7 @@ func CheckEmbed(embedPatternPos map[string][]token.Position, fset *token.FileSet
 	}
 	for _, e := range eps {
 		if e.Spec == nil {
-			return nil, fmt.Errorf("%v: misplaced go:embed directive", e.Pos)
+			return nil, fmt.Errorf("%v: misplaced go:embed directive", e.embedPos())
 		}
 	}
 	return eps, nil

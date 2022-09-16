@@ -42,7 +42,7 @@ func testError(src string, want string, t *testing.T) {
 	}
 }
 
-func TestMisImportEmbed(t *testing.T) {
+func TestErrorMisImportEmbed(t *testing.T) {
 	src := `package main
 
 //go:embed testata/data1.txt
@@ -122,4 +122,19 @@ func main() {
 }
 `
 	testError(src, `./main.go:6:5: go:embed cannot apply to var of type map[int]int`, t)
+}
+
+func TestErrorMisplaced(t *testing.T) {
+	src := `package main
+
+import _ "embed"
+
+//go:embed testdata/data1.txt
+//var data string
+
+func main() {
+}
+`
+	testError(src, `./main.go:5:3: misplaced go:embed directive`, t)
+
 }
