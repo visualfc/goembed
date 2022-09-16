@@ -1,6 +1,13 @@
 # embed
-go1.16 go:embed parse util
+go1.16 go:embed parse package
 
+[![Go1.16](https://github.com/visualfc/goembed/workflows/Go1.16/badge.svg)](https://github.com/visualfc/goembed/actions/workflows/go116.yml)
+[![Go1.17](https://github.com/visualfc/goembed/workflows/Go1.17/badge.svg)](https://github.com/visualfc/goembed/actions/workflows/go117.yml)
+[![Go1.18](https://github.com/visualfc/goembed/workflows/Go1.18/badge.svg)](https://github.com/visualfc/goembed/actions/workflows/go118.yml)
+[![Go1.19](https://github.com/visualfc/goembed/workflows/Go1.19/badge.svg)](https://github.com/visualfc/goembed/actions/workflows/go119.yml)
+
+
+### demo
 ```
 package main
 
