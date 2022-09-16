@@ -27,13 +27,28 @@ func parserEmbed(fset *token.FileSet, f *ast.File) ([]*goembed.Embed, error) {
 	return goembed.CheckEmbed(eps.PatternPos, fset, []*ast.File{f})
 }
 
-func testError(src string, want string, t *testing.T) {
+func load(src string) error {
 	fset := token.NewFileSet()
 	f, err := parserFile(fset, src)
 	if err != nil {
-		t.Fatal(err)
+		return err
 	}
-	_, err = parserEmbed(fset, f)
+	ems, err := parserEmbed(fset, f)
+	if err != nil {
+		return err
+	}
+	r := goembed.NewResolve()
+	for _, em := range ems {
+		_, err := r.Load(".", fset, em)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func testError(src string, want string, t *testing.T) {
+	err := load(src)
 	if err == nil {
 		t.Fatalf("must have error: %v", want)
 	}
@@ -136,4 +151,18 @@ func main() {
 }
 `
 	testError(src, `./main.go:5:3: misplaced go:embed directive`, t)
+}
+
+func TestErrorMultipleFiles(t *testing.T) {
+	src := `package main
+
+import _ "embed"
+
+//go:embed testdata/data1.txt testdata/data2.txt
+var data string
+
+func main() {
+}
+`
+	testError(src, `./main.go:6:5: invalid go:embed: multiple files for type string`, t)
 }
