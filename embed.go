@@ -1,8 +1,10 @@
 package goembed
 
 import (
+	"bytes"
 	"fmt"
 	"go/ast"
+	"go/printer"
 	"go/token"
 	"sort"
 	"strings"
@@ -76,6 +78,7 @@ const (
 	EmbedBytes
 	EmbedString
 	EmbedFiles
+	EmbedMaybeAlias // may be alias string or []byte
 )
 
 func checkIdent(v ast.Expr, name string) bool {
@@ -91,9 +94,13 @@ func embedKind(typ ast.Expr) int {
 		if checkIdent(v, "string") {
 			return EmbedString
 		}
+		return EmbedMaybeAlias
 	case *ast.ArrayType:
 		if checkIdent(v.Elt, "byte") {
 			return EmbedBytes
+		}
+		if _, ok := v.Elt.(*ast.Ident); ok {
+			return EmbedMaybeAlias
 		}
 	case *ast.SelectorExpr:
 		if checkIdent(v.X, "embed") && checkIdent(v.Sel, "FS") {
@@ -122,8 +129,14 @@ func findEmbed(fset *token.FileSet, file *ast.File, eps []*Embed) error {
 						if len(vs.Values) > 0 {
 							return fmt.Errorf("%v: go:embed cannot apply to var with initializer", e.Pos)
 						}
+						kind := embedKind(vs.Type)
+						if kind == EmbedUnknown {
+							var buf bytes.Buffer
+							printer.Fprint(&buf, fset, vs.Type)
+							return fmt.Errorf("%v: go:embed cannot apply to var of type %v", pos, buf.String())
+						}
 						e.Name = name.Name
-						e.Kind = embedKind(vs.Type)
+						e.Kind = kind
 						e.Spec = vs
 					}
 				}

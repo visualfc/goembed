@@ -68,7 +68,7 @@ func TestResolve(t *testing.T) {
 	}
 	r := NewResolve()
 	for _, em := range ems {
-		files, err := r.Load(pkg.Dir, em)
+		files, err := r.Load(pkg.Dir, fset, em)
 		if err != nil {
 			t.Fatal("error load", em, err)
 		}

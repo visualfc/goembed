@@ -35,7 +35,7 @@ func main() {
 	}
 	r := goembed.NewResolve()
 	for _, em := range ems {
-		files, err := r.Load(pkg.Dir, em)
+		files, err := r.Load(pkg.Dir, fset, em)
 		if err != nil {
 			panic(err)
 		}
