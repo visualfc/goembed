@@ -74,6 +74,11 @@ func embedPatterns(m map[string][]token.Position) []string {
 }
 
 func haveEmbedImport(file *ast.File) (bool, error) {
+	name, err := FindEmbedImportName(file)
+	return name != "", err
+}
+
+func FindEmbedImportName(file *ast.File) (string, error) {
 	for _, decl := range file.Decls {
 		d, ok := decl.(*ast.GenDecl)
 		if !ok {
@@ -87,14 +92,17 @@ func haveEmbedImport(file *ast.File) (bool, error) {
 			quoted := spec.Path.Value
 			path, err := strconv.Unquote(quoted)
 			if err != nil {
-				return false, fmt.Errorf("parser returned invalid quoted string: <%s>", quoted)
+				return "", fmt.Errorf("parser returned invalid quoted string: <%s>", quoted)
 			}
 			if path == "embed" {
-				return true, nil
+				if spec.Name != nil {
+					return spec.Name.Name, nil
+				}
+				return "embed", nil
 			}
 		}
 	}
-	return false, nil
+	return "", nil
 }
 
 type fileEmbed struct {
