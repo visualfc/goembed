@@ -11,6 +11,7 @@ import (
 	"go/parser"
 	"go/token"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"unsafe"
@@ -95,13 +96,24 @@ func TestResolve(t *testing.T) {
 				t.Log(f.Name, string(f.Data), f.Hash)
 			}
 			var info1 []string
-			mfiles := *(*myfs)(unsafe.Pointer(&fs)).files
-			for _, file := range mfiles {
-				info1 = append(info1, fmt.Sprintf("%v,%v,%v", file.name, file.data, file.hash))
-			}
 			var info2 []string
-			for _, f := range files {
-				info2 = append(info2, fmt.Sprintf("%v,%v,%v", f.Name, string(f.Data), f.Hash))
+			mfiles := *(*myfs)(unsafe.Pointer(&fs)).files
+			switch runtime.Version()[:6] {
+			default:
+				for _, file := range mfiles {
+					info1 = append(info1, fmt.Sprintf("%v,%v,%v", file.name, file.data, file.hash))
+				}
+				for _, f := range files {
+					info2 = append(info2, fmt.Sprintf("%v,%v,%v", f.Name, string(f.Data), f.Hash))
+				}
+			case "go1.19":
+				t.Log("go1.19 compiler use NOTSHA256 skip hash check")
+				for _, file := range mfiles {
+					info1 = append(info1, fmt.Sprintf("%v,%v", file.name, file.data))
+				}
+				for _, f := range files {
+					info2 = append(info2, fmt.Sprintf("%v,%v", f.Name, string(f.Data)))
+				}
 			}
 			if strings.Join(info1, ";") != strings.Join(info2, ";") {
 				t.Fatalf("build fs error:\n%v\n%v", info1, info2)
