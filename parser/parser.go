@@ -40,10 +40,17 @@ func ParseEmbed(fset *token.FileSet, files []*ast.File) (*EmbedPatterns, error) 
 }
 
 func parseFile(fset *token.FileSet, file *ast.File) ([]fileEmbed, error) {
+	hasEmbed, err := haveEmbedImport(file)
+	if err != nil {
+		return nil, err
+	}
 	var embeds []fileEmbed
 	for _, group := range file.Comments {
 		for _, comment := range group.List {
 			if strings.HasPrefix(comment.Text, "//go:embed ") {
+				if !hasEmbed {
+					return nil, fmt.Errorf(`%v: go:embed only allowed in Go files that import "embed"`, fset.Position(comment.Slash+2))
+				}
 				embs, err := parseGoEmbed(comment.Text[11:], fset.Position(comment.Slash+11))
 				if err == nil {
 					embeds = append(embeds, embs...)
@@ -53,13 +60,6 @@ func parseFile(fset *token.FileSet, file *ast.File) ([]fileEmbed, error) {
 	}
 	if len(embeds) == 0 {
 		return nil, nil
-	}
-	hasEmbed, err := haveEmbedImport(file)
-	if err != nil {
-		return nil, err
-	}
-	if !hasEmbed {
-		return nil, fmt.Errorf(`%v: go:embed only allowed in Go files that import "embed"`, embeds[0].pos)
 	}
 	return embeds, nil
 }
