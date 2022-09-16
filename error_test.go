@@ -4,6 +4,7 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"os"
 	"testing"
 
 	"github.com/visualfc/goembed"
@@ -38,8 +39,9 @@ func load(src string) error {
 		return err
 	}
 	r := goembed.NewResolve()
+	wd, _ := os.Getwd()
 	for _, em := range ems {
-		_, err := r.Load(".", fset, em)
+		_, err := r.Load(wd, fset, em)
 		if err != nil {
 			return err
 		}
@@ -159,6 +161,20 @@ func TestErrorMultipleFiles(t *testing.T) {
 import _ "embed"
 
 //go:embed testdata/data1.txt testdata/data2.txt
+var data string
+
+func main() {
+}
+`
+	testError(src, `./main.go:6:5: invalid go:embed: multiple files for type string`, t)
+}
+
+func TestErrorMultipleFiles2(t *testing.T) {
+	src := `package main
+
+import _ "embed"
+
+//go:embed testdata
 var data string
 
 func main() {
