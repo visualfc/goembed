@@ -136,5 +136,4 @@ func main() {
 }
 `
 	testError(src, `./main.go:5:3: misplaced go:embed directive`, t)
-
 }
