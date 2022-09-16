@@ -14,12 +14,14 @@ import (
 	"github.com/visualfc/goembed/resolve"
 )
 
+// File is embed data info
 type File struct {
 	Name string
 	Data []byte
 	Hash [16]byte // truncated SHA256 hash
 }
 
+// Resolve is load embed data interface
 type Resolve interface {
 	Load(dir string, fset *token.FileSet, em *Embed) ([]*File, error)
 	Files() []*File
@@ -29,10 +31,12 @@ type resolveFile struct {
 	data map[string]*File
 }
 
+// NewResolve create load embed data interface
 func NewResolve() Resolve {
 	return &resolveFile{make(map[string]*File)}
 }
 
+// BuildFS is build files to new files list with directory
 func BuildFS(files []*File) []*File {
 	have := make(map[string]bool)
 	var list []*File

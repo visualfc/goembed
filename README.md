@@ -1,5 +1,5 @@
-# embed
-go1.16 go:embed parse package
+# goembed
+goembed is Golang go:embed parse package
 
 [![Go1.16](https://github.com/visualfc/goembed/workflows/Go1.16/badge.svg)](https://github.com/visualfc/goembed/actions/workflows/go116.yml)
 [![Go1.17](https://github.com/visualfc/goembed/workflows/Go1.17/badge.svg)](https://github.com/visualfc/goembed/actions/workflows/go117.yml)
