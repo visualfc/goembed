@@ -12,6 +12,7 @@ import (
 	"strings"
 )
 
+// EmbedPatterns is go:embed patterns and pos
 type EmbedPatterns struct {
 	Patterns   []string                    // patterns from ast.File
 	PatternPos map[string][]token.Position // line information for Patterns
@@ -78,6 +79,7 @@ func haveEmbedImport(file *ast.File) (bool, error) {
 	return name != "", err
 }
 
+// FindEmbedImportName is find embed package import name
 func FindEmbedImportName(file *ast.File) (string, error) {
 	for _, decl := range file.Decls {
 		d, ok := decl.(*ast.GenDecl)

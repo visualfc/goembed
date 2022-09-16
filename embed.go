@@ -12,9 +12,21 @@ import (
 	embedparser "github.com/visualfc/goembed/parser"
 )
 
+// Kind is embed var type kind
+type Kind int
+
+const (
+	EmbedUnknown Kind = iota
+	EmbedBytes
+	EmbedString
+	EmbedFiles
+	EmbedMaybeAlias // may be alias string or []byte
+)
+
+// Embed describes go:embed variable
 type Embed struct {
 	Name     string
-	Kind     int
+	Kind     Kind
 	Patterns []string
 	Pos      token.Position
 	Spec     *ast.ValueSpec
@@ -32,7 +44,7 @@ type embedPattern struct {
 	Pos      token.Position
 }
 
-// CheckEmbed lookup go:embed vars from embedPatternPos
+// CheckEmbed lookup go:embed vars for embedPatternPos
 func CheckEmbed(embedPatternPos map[string][]token.Position, fset *token.FileSet, files []*ast.File) ([]*Embed, error) {
 	if len(embedPatternPos) == 0 {
 		return nil, nil
@@ -82,14 +94,6 @@ func CheckEmbed(embedPatternPos map[string][]token.Position, fset *token.FileSet
 	return eps, nil
 }
 
-const (
-	EmbedUnknown int = iota
-	EmbedBytes
-	EmbedString
-	EmbedFiles
-	EmbedMaybeAlias // may be alias string or []byte
-)
-
 func checkIdent(v ast.Expr, name string) bool {
 	if ident, ok := v.(*ast.Ident); ok && ident.Name == name {
 		return true
@@ -97,7 +101,7 @@ func checkIdent(v ast.Expr, name string) bool {
 	return false
 }
 
-func embedKind(typ ast.Expr, importName string) int {
+func embedKind(typ ast.Expr, importName string) Kind {
 	switch v := typ.(type) {
 	case *ast.Ident:
 		switch v.Name {
