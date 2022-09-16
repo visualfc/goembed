@@ -8,6 +8,8 @@ import (
 	"go/token"
 	"sort"
 	"strings"
+
+	embedparser "github.com/visualfc/goembed/parser"
 )
 
 type Embed struct {
@@ -95,25 +97,30 @@ func checkIdent(v ast.Expr, name string) bool {
 	return false
 }
 
-func embedKind(typ ast.Expr) int {
+func embedKind(typ ast.Expr, importName string) int {
 	switch v := typ.(type) {
 	case *ast.Ident:
-		if checkIdent(v, "string") {
+		switch v.Name {
+		case "string":
 			return EmbedString
+		case "FS":
+			if importName == "." {
+				return EmbedFiles
+			}
 		}
 		return EmbedMaybeAlias
 	case *ast.ArrayType:
 		if v.Len != nil {
 			break
 		}
-		if checkIdent(v.Elt, "byte") {
-			return EmbedBytes
-		}
-		if _, ok := v.Elt.(*ast.Ident); ok {
+		if ident, ok := v.Elt.(*ast.Ident); ok {
+			if ident.Name == "byte" {
+				return EmbedBytes
+			}
 			return EmbedMaybeAlias
 		}
 	case *ast.SelectorExpr:
-		if checkIdent(v.X, "embed") && checkIdent(v.Sel, "FS") {
+		if checkIdent(v.X, importName) && checkIdent(v.Sel, "FS") {
 			return EmbedFiles
 		}
 	}
@@ -121,6 +128,10 @@ func embedKind(typ ast.Expr) int {
 }
 
 func findEmbed(fset *token.FileSet, file *ast.File, eps []*Embed) error {
+	importName, err := embedparser.FindEmbedImportName(file)
+	if err != nil {
+		return err
+	}
 	for _, decl := range file.Decls {
 		if d, ok := decl.(*ast.GenDecl); ok && d.Tok == token.VAR {
 			for _, spec := range d.Specs {
@@ -139,7 +150,7 @@ func findEmbed(fset *token.FileSet, file *ast.File, eps []*Embed) error {
 						if len(vs.Values) > 0 {
 							return fmt.Errorf("%v: go:embed cannot apply to var with initializer", e.embedPos())
 						}
-						kind := embedKind(vs.Type)
+						kind := embedKind(vs.Type, importName)
 						if kind == EmbedUnknown {
 							var buf bytes.Buffer
 							printer.Fprint(&buf, fset, vs.Type)
