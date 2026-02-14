@@ -12,6 +12,7 @@ import (
 	"go/token"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"testing"
 	"unsafe"
@@ -98,15 +99,16 @@ func TestResolve(t *testing.T) {
 			var info1 []string
 			var info2 []string
 			mfiles := *(*myfs)(unsafe.Pointer(&fs)).files
-			switch runtime.Version()[:6] {
-			default:
+
+			n, _ := strconv.Atoi(runtime.Version()[4:6])
+			if n < 19 {
 				for _, file := range mfiles {
 					info1 = append(info1, fmt.Sprintf("%v,%v,%v", file.name, file.data, file.hash))
 				}
 				for _, f := range files {
 					info2 = append(info2, fmt.Sprintf("%v,%v,%v", f.Name, string(f.Data), f.Hash))
 				}
-			case "go1.19":
+			} else {
 				t.Log("go1.19 compiler use NOTSHA256 skip hash check")
 				for _, file := range mfiles {
 					info1 = append(info1, fmt.Sprintf("%v,%v", file.name, file.data))
